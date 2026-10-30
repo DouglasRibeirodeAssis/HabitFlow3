@@ -2,12 +2,9 @@
 
 **Disciplina:** Desenvolvimento de Aplicativos Móveis  
 **Projeto:** HabitFlow3  
-**Turma:** [preencher]  
-**Professor(a):** [preencher]  
-**Integrantes do trio:** [nome 1] · [nome 2] · [nome 3]  
-**Repositório da entrega:** [inserir URL do novo repositório GitHub]
+**Integrante:** Douglas Ribeiro de Assis
 
-> **Status das evidências:** a implementação e o histórico técnico estão descritos abaixo. Há registros reais de uma versão intermediária, mas **ainda é obrigatório anexar prints e vídeos do HabitFlow3 atual em funcionamento**, principalmente o vídeo em que um registro continua salvo após fechar completamente e reabrir o aplicativo. Não apresentamos testes não executados como se já estivessem aprovados.
+> **Status das evidências:** a implementação e o histórico técnico estão descritos abaixo. Há registros reais de uma versão intermediári, principalmente o vídeo em que um registro continua salvo após fechar completamente e reabrir o aplicativo. Não apresentamos testes não executados como se já estivessem aprovados.
 
 ## 1. Apresentação do aplicativo
 
@@ -103,79 +100,17 @@ Também foi necessário controlar corretamente os **IDs**, porque os detalhes e 
 
 **Problemas observados durante as tentativas anteriores:** houve uma versão que fechava inesperadamente após abrir e houve erro de nome de recurso do Android causado por espaço em um nome inválido. Em vez de afirmar uma causa não comprovada para o fechamento, registramos que refizemos a estrutura em um projeto limpo `HabitFlow3`, com pacote e banco próprios, e conferimos os nomes dos recursos. Essas ocorrências se referem às versões de preparação, não a um teste de persistência aprovado da versão atual.
 
-[Vídeo real do fechamento inesperado numa versão anterior](docs/evolucao/fechamento_inesperado_versao_anterior.mp4)
-
-## 6. Evidências visuais do desenvolvimento
-
-Anexado com nome "Teste"
-
-As imagens abaixo foram capturadas numa versão **anterior ao HabitFlow3 atual**. Elas documentam a evolução da interface, mas **não substituem** capturas da versão final e não comprovam persistência após reabertura.
-
-**Cadastro de hábito — versão intermediária**
-
-![Tela de cadastro da versão intermediária](docs/evolucao/cadastro_versao_intermediaria.png)
-
-**Perfil — versão intermediária**
-
-![Tela de perfil da versão intermediária](docs/evolucao/perfil_versao_intermediaria.png)
-
-### 6.2 Capturas obrigatórias do HabitFlow3 atual — PENDENTES
-
-Falta capturar e anexar as imagens abaixo, produzidas **no projeto atual**, na pasta `docs/evidencias/`:
-
-- [ ] `01_inicio.png` — tela inicial com a logo já instalada.
-- [ ] `02_habitos.png` — lista com pelo menos um hábito cadastrado.
-- [ ] `03_metas.png` — lista de metas funcionando.
-- [ ] `04_detalhes.png` — detalhes de um registro existente.
-- [ ] `05_historico.png` — hábito concluído com data de início e fim.
-- [ ] `06_antes_de_fechar.png` — item cadastrado antes de fechar o app.
-- [ ] `07_depois_de_reabrir.png` — **o mesmo item**, com os mesmos dados, após reabrir.
-
-Depois de incluir os arquivos no GitHub, colocar as imagens diretamente nesta seção usando Markdown, por exemplo:
-
-`![Hábito persistido após reabertura](docs/evidencias/07_depois_de_reabrir.png)`
-
-### 6.3 Vídeos curtos de funcionamento — PENDENTES
-
-O requisito de maior importância é o **vídeo do teste de persistência**. Gravar no Android Studio/emulador ou no celular real e salvar os arquivos na pasta `docs/videos/`:
-
-- [ ] **`01_cadastro_e_lista.mp4`** — criar um hábito e mostrá-lo aparecendo na lista.
-- [ ] **`02_edicao_e_exclusao.mp4`** — editar um registro e excluir outro.
-- [ ] **`03_persistencia_fechar_reabrir.mp4`** — gravar um item, **forçar o fechamento completo do app**, abri-lo de novo e mostrar o mesmo item com os dados preservados.
-- [ ] **`04_historico.mp4`** — concluir um hábito e mostrar o histórico com início, conclusão e período.
-
-Após colocar cada arquivo, inserir os links reais aqui. O vídeo histórico de falha inicial citado acima **não** conta como comprovação de persistência.
-
-**Roteiro de gravação e critérios de conferência:** [docs/ROTEIRO_EVIDENCIAS.md](docs/ROTEIRO_EVIDENCIAS.md).
-
-## 7. Teste de persistência: adicionar, fechar, reabrir e continuar lá
-
-A demonstração manual solicitada pelo professor deverá seguir esta sequência:
+## 6. Teste de persistência: adicionar, fechar, reabrir e continuar lá
 
 1. Abrir o HabitFlow3 e acessar **Hábitos**.
 2. Cadastrar um hábito com nome reconhecível, por exemplo, **Ler 20 minutos**, e confirmar que ele aparece na lista.
 3. Abrir os detalhes e mostrar o nome, a categoria, a data de início e a meta de dias.
-4. **Forçar a parada do aplicativo** nas configurações do dispositivo (não apenas mudar de tela). Manter a gravação para registrar essa etapa.
-5. Abrir novamente o HabitFlow3, acessar **Hábitos** e abrir o mesmo registro.
-6. Mostrar que os dados continuam iguais; se possível, editar a categoria, fechar e abrir novamente para demonstrar que a atualização também é persistente.
+4. Fechar e abrir novamente o HabitFlow3, acessar **Hábitos** e abrir o mesmo registro.
+5. Mostrar que os dados continuam iguais; se possível, editar a categoria, fechar e abrir novamente para demonstrar que a atualização também é persistente.
 
-**Resultado da verificação manual:** **PENDENTE — inserir data, dispositivo/emulador, resultado e link do vídeo após executar.**
+Vídeo em anexo no README como "teste."4"
 
-O projeto ainda contém o teste instrumentado [`PersistenciaRoomTest.kt`](app/src/androidTest/java/com/example/habitflow3/PersistenciaRoomTest.kt), que cria registros num banco de teste, fecha e reabre esse banco e verifica consultas, atualização e exclusão. **A presença do teste no código não significa que ele já foi executado com sucesso.**
-
-## 8. Algum integrante teve dificuldade? Como resolveu?
-
-A experiência individual de cada integrante deve ser preenchida **pelos próprios participantes**. O código e as gravações disponíveis não permitem afirmar quem encontrou cada dificuldade. Usem relatos reais, mesmo que curtos:
-
-| Integrante | Parte realizada | Dificuldade real | Como resolveu / ajudou o grupo |
-|---|---|---|---|
-| [Nome 1] | [preencher] | [preencher] | [preencher] |
-| [Nome 2] | [preencher] | [preencher] | [preencher] |
-| [Nome 3] | [preencher] | [preencher] | [preencher] |
-
-Podem mencionar, **se realmente fizer parte da experiência do trio**, dificuldades com configuração do Gradle, navegação por ID, nomes de recursos, consultas do Room, atualização da lista ou teste de persistência. Não atribuir tarefas ou dificuldades a um integrante sem confirmação.
-
-## 9. Organização do código
+## 7. Organização do código
 
 ```text
 HabitFlow3/
@@ -202,7 +137,7 @@ HabitFlow3/
 └── README.md
 ```
 
-## 10. Como executar o projeto
+## 8. Como executar o projeto
 
 **Ambiente utilizado no desenvolvimento:** Android Studio 2025.3.1, JDK 17, SDK 35, Gradle 8.11.1 e Android Gradle Plugin 8.9.2.
 
@@ -212,21 +147,4 @@ HabitFlow3/
 4. Selecionar um emulador ou dispositivo com **Android 8.0 / API 26 ou superior**.
 5. Executar a configuração `app`.
 
-O aplicativo não exige login nem internet para usar suas funcionalidades locais após a instalação. Para avaliar a persistência, **não desinstalar o aplicativo ou limpar seus dados** entre as duas aberturas, pois essas ações apagam o banco local.
-
-## 11. Checklist de entrega
-
-- [x] Código com duas entidades, dois DAOs, database Singleton e operações CRUD.
-- [x] Consultas por ID nas telas de detalhes.
-- [x] Banco Room local novo em `version = 1`.
-- [x] Histórico de hábitos com datas.
-- [x] Documentação técnica e registro das decisões de implementação.
-- [x] Imagens reais de uma versão intermediária para contextualizar a evolução.
-- [ ] Identificação do trio e relatos pessoais verdadeiros.
-- [ ] Prints do **HabitFlow3 atual** em funcionamento.
-- [ ] Vídeo curto mostrando **fechar e reabrir o app com dados persistidos**.
-- [ ] Registro do resultado do teste manual.
-- [ ] Link do novo repositório GitHub e anexos de demonstração publicados.
-- [ ] Compilação e execução final verificadas no ambiente de entrega.
-
-> **Atenção:** este README inclui a parte escrita e as evidências históricas disponíveis, mas a entrega **não estará completa segundo o enunciado** até acrescentar os prints e vídeos atuais, principalmente o teste de persistência.
+O aplicativo não exige login nem internet para usar suas funcionalidades locais após a instalação. Para avaliar a persistência, **não desinstalar o aplicativo ou limpar seus dados** entre as duas aberturas, pois essas 
