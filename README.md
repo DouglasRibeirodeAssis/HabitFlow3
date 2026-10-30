@@ -108,7 +108,7 @@ Também foi necessário controlar corretamente os **IDs**, porque os detalhes e 
 4. Fechar e abrir novamente o HabitFlow3, acessar **Hábitos** e abrir o mesmo registro.
 5. Mostrar que os dados continuam iguais; se possível, editar a categoria, fechar e abrir novamente para demonstrar que a atualização também é persistente.
 
-Vídeo em anexo no README como "teste."4"
+Vídeo em anexo no como "teste."4"
 
 ## 7. Organização do código
 
