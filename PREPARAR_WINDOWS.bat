@@ -5,7 +5,7 @@ set "SHA=2db75c40782f5e8ba1fc278a5574bab070adccb2d21ca5a6e5ed840888448046"
 if not exist "%DESTINO%" (
   powershell -NoProfile -ExecutionPolicy Bypass -Command "try { Invoke-WebRequest -UseBasicParsing -Uri 'https://services.gradle.org/distributions/gradle-8.11.1-wrapper.jar' -OutFile '%DESTINO%' -ErrorAction Stop } catch { Write-Host $_; exit 1 }"
   if errorlevel 1 (
-    echo Nao foi possivel obter o Gradle Wrapper. Verifique sua conexao.
+    echo Nao foi possivel obter o Gradle Wrapper. Verifique a conexao.
     exit /b 1
   )
 )

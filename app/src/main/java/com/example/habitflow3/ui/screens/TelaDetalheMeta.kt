@@ -17,92 +17,76 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.habitflow3.data.formatarData
-import com.example.habitflow3.data.interpretarData
-import com.example.habitflow3.ui.HabitFlowViewModel
+import com.example.habitflow3.viewmodel.MetasViewModel
 
 @Composable
-fun TelaDetalheMeta(id: Int, modelo: HabitFlowViewModel, voltar: () -> Unit, aoErro: (String) -> Unit) {
-    val escopo = rememberCoroutineScope()
-    var meta by remember(id) { mutableStateOf<com.example.habitflow3.data.MetaEntity?>(null) }
-    var carregado by remember(id) { mutableStateOf(false) }
-    LaunchedEffect(id, modelo.metas) {
-        meta = modelo.buscarMetaPorId(id)
-        carregado = true
-    }
-    var editando by remember { mutableStateOf(false) }
-    var confirmarExclusao by remember { mutableStateOf(false) }
-    var titulo by remember { mutableStateOf("") }
-    var descricao by remember { mutableStateOf("") }
-    var prazo by remember { mutableStateOf("") }
+fun TelaDetalheMeta(id: Int, modelo: MetasViewModel, voltar: () -> Unit) {
+    val estado by modelo.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(id) { modelo.selecionarMeta(id) }
+    val meta = estado.metaSelecionada?.takeIf { it.id == id }
+    // Apenas estados de interface visual ficam locais.
+    var editando by remember(id) { mutableStateOf(false) }
+    var confirmarExclusao by remember(id) { mutableStateOf(false) }
 
-    LaunchedEffect(meta?.id) {
-        val metaCarregada = meta
-        if (metaCarregada != null) {
-            titulo = metaCarregada.titulo
-            descricao = metaCarregada.descricao
-            prazo = if (metaCarregada.prazo.isBlank()) "" else formatarData(metaCarregada.prazo)
-        }
-    }
-
-    val metaAtual = meta
-    if (metaAtual == null) {
-        Text(if (carregado) "Meta não encontrada." else "Carregando meta...", modifier = Modifier.padding(16.dp))
+    if (meta == null) {
+        Text(
+            if (estado.carregandoDetalhe) "Carregando meta..." else "Meta não encontrada.",
+            modifier = Modifier.padding(16.dp)
+        )
         return
     }
-
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        TituloSecao(if (editando) "Editar meta" else metaAtual.titulo)
+        TituloSecao(if (editando) "Editar meta" else meta.titulo)
         if (editando) {
-            CampoFormulario("Título *", titulo, { titulo = it })
-            CampoFormulario("Descrição", descricao, { descricao = it }, linhaUnica = false)
-            CampoFormulario("Prazo (dd/MM/aaaa), opcional", prazo, { prazo = it })
-            Button(onClick = {
-                val prazoIso = if (prazo.isBlank()) "" else interpretarData(prazo)
-                when {
-                    titulo.isBlank() -> aoErro("Informe o título da meta.")
-                    prazoIso == null -> aoErro("O prazo precisa estar no formato dd/MM/aaaa.")
-                    else -> escopo.executarAcao(aoErro) {
-                        modelo.salvarMeta(metaAtual.copy(titulo = titulo.trim(), descricao = descricao.trim(), prazo = prazoIso))
-                        editando = false
-                    }
-                }
-            }, modifier = Modifier.fillMaxWidth()) { Text("Salvar alterações") }
-            OutlinedButton(onClick = { editando = false }, modifier = Modifier.fillMaxWidth()) { Text("Cancelar edição") }
+            val formulario = estado.edicaoMeta
+            CampoFormulario("Título *", formulario.titulo, modelo::atualizarTituloEdicao)
+            CampoFormulario("Descrição", formulario.descricao, modelo::atualizarDescricaoEdicao, linhaUnica = false)
+            CampoFormulario("Prazo (dd/MM/aaaa), opcional", formulario.prazo, modelo::atualizarPrazoEdicao)
+            Button(
+                onClick = { modelo.salvarEdicaoMeta { editando = false } },
+                enabled = !estado.salvando,
+                modifier = Modifier.fillMaxWidth()
+            ) { Text(if (estado.salvando) "Salvando..." else "Salvar alterações") }
+            OutlinedButton(
+                onClick = { modelo.cancelarEdicaoMeta(); editando = false },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Cancelar edição") }
         } else {
-            CartaoInformacao("Descrição", metaAtual.descricao.ifBlank { "Sem descrição" })
-            CartaoInformacao("Prazo", if (metaAtual.prazo.isBlank()) "Não definido" else formatarData(metaAtual.prazo))
-            Button(onClick = {
-                escopo.executarAcao(aoErro) { modelo.alterarConclusaoMeta(metaAtual, !metaAtual.concluida) }
-            }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (metaAtual.concluida) "Marcar como pendente" else "Marcar como concluída")
-            }
-            OutlinedButton(onClick = { editando = true }, modifier = Modifier.fillMaxWidth()) { Text("Editar meta") }
-            OutlinedButton(onClick = { confirmarExclusao = true }, modifier = Modifier.fillMaxWidth()) { Text("Excluir meta") }
+            CartaoInformacao("Descrição", meta.descricao.ifBlank { "Sem descrição" })
+            CartaoInformacao("Prazo", if (meta.prazo.isBlank()) "Não definido" else formatarData(meta.prazo))
+            Button(
+                onClick = { modelo.alterarConclusao(meta, !meta.concluida) },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text(if (meta.concluida) "Marcar como pendente" else "Marcar como concluída") }
+            OutlinedButton(
+                onClick = { modelo.prepararEdicaoMeta(meta); editando = true },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Editar meta") }
+            OutlinedButton(
+                onClick = { confirmarExclusao = true },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Excluir meta") }
         }
     }
-    if (confirmarExclusao) {
-        AlertDialog(
-            onDismissRequest = { confirmarExclusao = false },
-            title = { Text("Excluir meta?") },
-            text = { Text("A meta será removida definitivamente.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirmarExclusao = false
-                    escopo.executarAcao(aoErro) {
-                        modelo.removerMeta(metaAtual)
-                        voltar()
-                    }
-                }) { Text("Excluir") }
-            },
-            dismissButton = { TextButton(onClick = { confirmarExclusao = false }) { Text("Cancelar") } }
-        )
-    }
+    if (confirmarExclusao) AlertDialog(
+        onDismissRequest = { confirmarExclusao = false },
+        title = { Text("Excluir meta?") },
+        text = { Text("A meta será removida definitivamente.") },
+        confirmButton = {
+            TextButton(onClick = { confirmarExclusao = false; modelo.remover(meta, voltar) }) {
+                Text("Excluir")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { confirmarExclusao = false }) { Text("Cancelar") }
+        }
+    )
 }

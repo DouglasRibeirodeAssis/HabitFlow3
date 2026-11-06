@@ -13,16 +13,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 fun TituloSecao(titulo: String, subtitulo: String? = null) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(titulo, style = MaterialTheme.typography.headlineSmall)
-        if (subtitulo != null) {
-            Text(subtitulo, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+        if (subtitulo != null) Text(subtitulo, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -53,16 +49,6 @@ fun CartaoInformacao(titulo: String, conteudo: String, modificador: Modifier = M
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(titulo, style = MaterialTheme.typography.labelLarge)
             Text(conteudo, style = MaterialTheme.typography.titleMedium)
-        }
-    }
-}
-
-fun CoroutineScope.executarAcao(aoErro: (String) -> Unit, bloco: suspend () -> Unit) {
-    launch {
-        try {
-            bloco()
-        } catch (e: Exception) {
-            aoErro("Não foi possível concluir a operação: ${e.localizedMessage ?: "erro inesperado"}")
         }
     }
 }

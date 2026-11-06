@@ -11,22 +11,22 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.habitflow3.data.formatarData
 import com.example.habitflow3.data.periodoEmDias
-import com.example.habitflow3.ui.HabitFlowViewModel
+import com.example.habitflow3.viewmodel.HabitosViewModel
 
 @Composable
-fun TelaHistorico(modelo: HabitFlowViewModel, abrirDetalhe: (Int) -> Unit) {
-    LaunchedEffect(Unit) { modelo.carregarHabitos() }
-    val concluidos = modelo.habitos.filter { it.dataConclusao != null }
-
+fun TelaHistorico(modelo: HabitosViewModel, abrirDetalhe: (Int) -> Unit) {
+    val estado by modelo.uiState.collectAsStateWithLifecycle()
+    val concluidos = estado.habitosConcluidos
     LazyColumn(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { TituloSecao("Histórico", "Veja os hábitos concluídos e o período de realização.") }
-        if (concluidos.isEmpty()) {
-            item { CartaoInformacao("Nenhum hábito concluído", "Quando você finalizar um hábito, ele aparecerá aqui.") }
+        if (concluidos.isEmpty()) item {
+            CartaoInformacao("Nenhum hábito concluído", "Quando você finalizar um hábito, ele aparecerá aqui.")
         }
         items(concluidos, key = { it.id }) { habito ->
             val dataFim = habito.dataConclusao ?: ""

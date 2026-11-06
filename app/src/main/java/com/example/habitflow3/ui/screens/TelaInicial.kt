@@ -1,4 +1,3 @@
-
 package com.example.habitflow3.ui.screens
 
 import androidx.compose.foundation.Image
@@ -20,130 +19,63 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.habitflow3.R
-import com.example.habitflow3.ui.HabitFlowViewModel
+import com.example.habitflow3.viewmodel.HabitosViewModel
+import com.example.habitflow3.viewmodel.MetasViewModel
 
 @Composable
 fun TelaInicial(
-    modelo: HabitFlowViewModel,
+    habitos: HabitosViewModel,
+    metas: MetasViewModel,
     abrirCadastro: () -> Unit,
     abrirMetas: () -> Unit,
     abrirHistorico: () -> Unit
 ) {
-    LaunchedEffect(Unit) {
-        modelo.carregarTudo()
-    }
-
-    val emAndamento = modelo.habitos.count {
-        it.dataConclusao == null
-    }
-
-    val terminados = modelo.habitos.count {
-        it.dataConclusao != null
-    }
-
-    val metasPendentes = modelo.metas.count {
-        !it.concluida
-    }
+    val estadoHabitos by habitos.uiState.collectAsStateWithLifecycle()
+    val estadoMetas by metas.uiState.collectAsStateWithLifecycle()
+    val emAndamento = estadoHabitos.totalAtivos
+    val terminados = estadoHabitos.totalConcluidos
+    val metasPendentes = estadoMetas.metasPendentes
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
         Image(
-            painter = painterResource(
-                id = R.drawable.logo_habitflow
-            ),
+            painter = painterResource(id = R.drawable.logo_habitflow),
             contentDescription = "Logo HabitFlow",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(150.dp),
+            modifier = Modifier.fillMaxWidth().height(150.dp),
             contentScale = ContentScale.Fit
         )
-
-        TituloSecao(
-            "Bem-vindo ao HabitFlow",
-            "Organize sua rotina, acompanhe metas e comemore cada conquista."
-        )
-
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-
-                Text(
-                    "Seu resumo",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-
-                    CartaoInformacao(
-                        "Hábitos ativos",
-                        "$emAndamento",
-                        Modifier.weight(1f)
-                    )
-
-                    CartaoInformacao(
-                        "Concluídos",
-                        "$terminados",
-                        Modifier.weight(1f)
-                    )
+        TituloSecao("Bem-vindo ao HabitFlow", "Organize sua rotina, acompanhe metas e comemore cada conquista.")
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Seu resumo", style = MaterialTheme.typography.titleLarge)
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    CartaoInformacao("Hábitos ativos", "$emAndamento", Modifier.weight(1f))
+                    CartaoInformacao("Concluídos", "$terminados", Modifier.weight(1f))
                 }
-
-                Text(
-                    "Metas pendentes: $metasPendentes",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Text("Metas pendentes: $metasPendentes", style = MaterialTheme.typography.bodyLarge)
             }
         }
-
-        Button(
-            onClick = abrirCadastro,
-            contentPadding = PaddingValues(14.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(
-                Icons.Default.AddCircle,
-                contentDescription = null
-            )
+        Button(onClick = abrirCadastro, contentPadding = PaddingValues(14.dp), modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Default.AddCircle, contentDescription = null)
             Text("  Cadastrar hábito")
         }
-
-        Button(
-            onClick = abrirMetas,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(
-                Icons.Default.Flag,
-                contentDescription = null
-            )
+        Button(onClick = abrirMetas, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Default.Flag, contentDescription = null)
             Text("  Minhas metas")
         }
-
-        Button(
-            onClick = abrirHistorico,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(
-                Icons.Default.CheckCircle,
-                contentDescription = null
-            )
+        Button(onClick = abrirHistorico, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Default.CheckCircle, contentDescription = null)
             Text("  Histórico de hábitos")
         }
     }

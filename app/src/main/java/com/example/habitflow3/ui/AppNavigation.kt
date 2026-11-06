@@ -22,8 +22,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -38,9 +38,10 @@ import com.example.habitflow3.ui.screens.TelaHistorico
 import com.example.habitflow3.ui.screens.TelaInicial
 import com.example.habitflow3.ui.screens.TelaMetas
 import com.example.habitflow3.ui.screens.TelaPerfil
-import com.example.habitflow3.ui.screens.executarAcao
-import kotlinx.coroutines.launch
+import com.example.habitflow3.viewmodel.HabitosViewModel
+import com.example.habitflow3.viewmodel.MetasViewModel
 
+// Mesmas nove rotas do HabitFlow3 original.
 object Rotas {
     const val INICIO = "inicio"
     const val HABITOS = "habitos"
@@ -51,7 +52,6 @@ object Rotas {
     const val DETALHE_META = "detalhe_meta/{id}"
     const val HISTORICO = "historico"
     const val PERFIL = "perfil"
-
     fun detalheHabito(id: Int) = "detalhe_habito/$id"
     fun editarHabito(id: Int) = "editar_habito/$id"
     fun detalheMeta(id: Int) = "detalhe_meta/$id"
@@ -59,15 +59,26 @@ object Rotas {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavigation(modelo: HabitFlowViewModel) {
+fun AppNavigation(habitos: HabitosViewModel, metas: MetasViewModel) {
     val navegacao = rememberNavController()
-    val estado by navegacao.currentBackStackEntryAsState()
-    val rota = estado?.destination?.route ?: Rotas.INICIO
-    val rotasPrincipais = listOf(Rotas.INICIO, Rotas.HABITOS, Rotas.METAS, Rotas.HISTORICO, Rotas.PERFIL)
-    val principal = rota in rotasPrincipais
-    val escopo = rememberCoroutineScope()
+    val entrada by navegacao.currentBackStackEntryAsState()
+    val rota = entrada?.destination?.route ?: Rotas.INICIO
+    val principais = listOf(Rotas.INICIO, Rotas.HABITOS, Rotas.METAS, Rotas.HISTORICO, Rotas.PERFIL)
+    val principal = rota in principais
     val avisos = remember { SnackbarHostState() }
-    val mostrarErro: (String) -> Unit = { mensagem -> escopo.launch { avisos.showSnackbar(mensagem) } }
+    val estadoHabitos by habitos.uiState.collectAsStateWithLifecycle()
+    val estadoMetas by metas.uiState.collectAsStateWithLifecycle()
+
+    // Erros de banco/validação aparecem em Snackbar e são limpos depois da exibição.
+    LaunchedEffect(estadoHabitos.erro) {
+        val erro = estadoHabitos.erro
+        if (erro != null) { avisos.showSnackbar(erro); habitos.limparErro() }
+    }
+    LaunchedEffect(estadoMetas.erro) {
+        val erro = estadoMetas.erro
+        if (erro != null) { avisos.showSnackbar(erro); metas.limparErro() }
+    }
+
     val voltar: () -> Unit = { navegacao.popBackStack(); Unit }
     val abrirPrincipal: (String) -> Unit = { destino ->
         navegacao.navigate(destino) {
@@ -76,7 +87,6 @@ fun AppNavigation(modelo: HabitFlowViewModel) {
             restoreState = true
         }
     }
-
     val titulo = when (rota) {
         Rotas.INICIO -> "HabitFlow"
         Rotas.HABITOS -> "Hábitos"
@@ -89,51 +99,47 @@ fun AppNavigation(modelo: HabitFlowViewModel) {
         Rotas.PERFIL -> "Perfil"
         else -> "HabitFlow"
     }
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(titulo) },
                 navigationIcon = {
-                    if (!principal) {
-                        IconButton(onClick = voltar) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
-                        }
+                    if (!principal) IconButton(onClick = voltar) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 }
             )
         },
         bottomBar = {
-            if (principal) {
-                NavigationBar {
-                    val destinos = listOf(
-                        Triple(Rotas.INICIO, "Início", Icons.Default.Home),
-                        Triple(Rotas.HABITOS, "Hábitos", Icons.Default.List),
-                        Triple(Rotas.METAS, "Metas", Icons.Default.Flag),
-                        Triple(Rotas.HISTORICO, "Histórico", Icons.Default.History),
-                        Triple(Rotas.PERFIL, "Perfil", Icons.Default.Person)
+            if (principal) NavigationBar {
+                val destinos = listOf(
+                    Triple(Rotas.INICIO, "Início", Icons.Default.Home),
+                    Triple(Rotas.HABITOS, "Hábitos", Icons.Default.List),
+                    Triple(Rotas.METAS, "Metas", Icons.Default.Flag),
+                    Triple(Rotas.HISTORICO, "Histórico", Icons.Default.History),
+                    Triple(Rotas.PERFIL, "Perfil", Icons.Default.Person)
+                )
+                destinos.forEach { (destino, nome, icone) ->
+                    NavigationBarItem(
+                        selected = rota == destino,
+                        onClick = { abrirPrincipal(destino) },
+                        icon = { Icon(icone, contentDescription = nome) },
+                        label = { Text(nome) }
                     )
-                    destinos.forEach { (destino, nome, icone) ->
-                        NavigationBarItem(
-                            selected = rota == destino,
-                            onClick = { abrirPrincipal(destino) },
-                            icon = { Icon(icone, contentDescription = nome) },
-                            label = { Text(nome) }
-                        )
-                    }
                 }
             }
         },
         snackbarHost = { SnackbarHost(avisos) }
-    ) { espacamento ->
+    ) { espaco ->
         NavHost(
             navController = navegacao,
             startDestination = Rotas.INICIO,
-            modifier = Modifier.padding(espacamento)
+            modifier = Modifier.padding(espaco)
         ) {
             composable(Rotas.INICIO) {
                 TelaInicial(
-                    modelo = modelo,
+                    habitos = habitos,
+                    metas = metas,
                     abrirCadastro = { navegacao.navigate(Rotas.CADASTRO_HABITO) },
                     abrirMetas = { abrirPrincipal(Rotas.METAS) },
                     abrirHistorico = { abrirPrincipal(Rotas.HISTORICO) }
@@ -141,80 +147,53 @@ fun AppNavigation(modelo: HabitFlowViewModel) {
             }
             composable(Rotas.HABITOS) {
                 TelaDashboard(
-                    modelo = modelo,
+                    habitos = habitos,
                     abrirCadastro = { navegacao.navigate(Rotas.CADASTRO_HABITO) },
                     abrirDetalhe = { id -> navegacao.navigate(Rotas.detalheHabito(id)) }
                 )
             }
             composable(Rotas.CADASTRO_HABITO) {
+                LaunchedEffect(Unit) { habitos.prepararNovoHabito() }
                 TelaCadastroHabito(
-                    existente = null,
+                    modelo = habitos,
                     modoEdicao = false,
-                    aoSalvar = { habito ->
-                        escopo.executarAcao(mostrarErro) {
-                            modelo.salvarHabito(habito)
-                            voltar()
-                        }
-                    },
-                    aoErro = mostrarErro
+                    aoSalvar = { habitos.salvarFormulario(voltar) }
                 )
             }
-            composable(
-                route = Rotas.DETALHE_HABITO,
-                arguments = listOf(navArgument("id") { type = NavType.IntType })
-            ) { entrada ->
-                val id = entrada.arguments?.getInt("id") ?: 0
+            composable(Rotas.DETALHE_HABITO, arguments = listOf(navArgument("id") { type = NavType.IntType })) { tela ->
+                val id = tela.arguments?.getInt("id") ?: 0
                 TelaDetalheHabito(
-                    id = id,
-                    modelo = modelo,
+                    id = id, modelo = habitos,
                     editar = { navegacao.navigate(Rotas.editarHabito(id)) },
-                    voltar = voltar,
-                    aoErro = mostrarErro
+                    voltar = voltar
                 )
             }
-            composable(
-                route = Rotas.EDITAR_HABITO,
-                arguments = listOf(navArgument("id") { type = NavType.IntType })
-            ) { entrada ->
-                val id = entrada.arguments?.getInt("id") ?: 0
-                LaunchedEffect(id) { modelo.carregarHabitos() }
-                val habito = modelo.habitos.firstOrNull { it.id == id }
-                if (habito != null) {
+            composable(Rotas.EDITAR_HABITO, arguments = listOf(navArgument("id") { type = NavType.IntType })) { tela ->
+                val id = tela.arguments?.getInt("id") ?: 0
+                LaunchedEffect(id) { habitos.selecionarHabito(id) }
+                val encontrado = estadoHabitos.habitoSelecionado?.takeIf { it.id == id }
+                if (encontrado != null) {
+                    LaunchedEffect(id, encontrado.id) { habitos.prepararEdicaoHabito(encontrado) }
                     TelaCadastroHabito(
-                        existente = habito,
+                        modelo = habitos,
                         modoEdicao = true,
-                        aoSalvar = { modificado ->
-                            escopo.executarAcao(mostrarErro) {
-                                modelo.salvarHabito(modificado)
-                                voltar()
-                            }
-                        },
-                        aoErro = mostrarErro
+                        aoSalvar = { habitos.salvarFormulario(voltar) }
                     )
                 } else {
-                    Text("Carregando hábito...")
+                    Text(if (estadoHabitos.carregandoDetalhe) "Carregando hábito..." else "Hábito não encontrado.")
                 }
             }
             composable(Rotas.METAS) {
-                TelaMetas(
-                    modelo = modelo,
-                    abrirDetalhe = { id -> navegacao.navigate(Rotas.detalheMeta(id)) },
-                    aoErro = mostrarErro
-                )
+                TelaMetas(metas, abrirDetalhe = { id -> navegacao.navigate(Rotas.detalheMeta(id)) })
             }
-            composable(
-                route = Rotas.DETALHE_META,
-                arguments = listOf(navArgument("id") { type = NavType.IntType })
-            ) { entrada ->
-                val id = entrada.arguments?.getInt("id") ?: 0
-                TelaDetalheMeta(id = id, modelo = modelo, voltar = voltar, aoErro = mostrarErro)
+            composable(Rotas.DETALHE_META, arguments = listOf(navArgument("id") { type = NavType.IntType })) { tela ->
+                val id = tela.arguments?.getInt("id") ?: 0
+                TelaDetalheMeta(id, metas, voltar)
             }
             composable(Rotas.HISTORICO) {
-                TelaHistorico(modelo = modelo, abrirDetalhe = { id -> navegacao.navigate(Rotas.detalheHabito(id)) })
+                TelaHistorico(habitos) { id -> navegacao.navigate(Rotas.detalheHabito(id)) }
             }
-            composable(Rotas.PERFIL) {
-                TelaPerfil(modelo)
-            }
+            composable(Rotas.PERFIL) { TelaPerfil(habitos, metas) }
         }
     }
 }

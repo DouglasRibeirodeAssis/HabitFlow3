@@ -1,0 +1,10 @@
+HABITFLOW3 — TRABALHO 4 (MVVM)
+
+1. Extraia este ZIP.
+2. WINDOWS: execute PREPARAR_WINDOWS.bat (baixa o wrapper oficial com SHA-256).
+3. Abra a pasta raiz HabitFlow3 no Android Studio 2025.3.1.
+4. Configure JDK 17 / SDK 35 e sincronize o Gradle.
+5. Build > Make Project. Rode o app.
+6. Leia README.md e docs/ROTEIRO_EVIDENCIAS.md.
+
+Observacao: nenhum teste Android foi executado pelo gerador; valide antes da entrega.

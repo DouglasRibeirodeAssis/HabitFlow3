@@ -17,23 +17,18 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.habitflow3.ui.HabitFlowViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.habitflow3.viewmodel.HabitosViewModel
 
 @Composable
-fun TelaDashboard(modelo: HabitFlowViewModel, abrirCadastro: () -> Unit, abrirDetalhe: (Int) -> Unit) {
-    LaunchedEffect(Unit) { modelo.carregarHabitos() }
-    val ativos = modelo.habitos.filter { it.dataConclusao == null }
-
-    LazyColumn(
-        modifier = Modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        item {
-            TituloSecao("Meus hábitos", "Acompanhe seus hábitos em andamento.")
-        }
+fun TelaDashboard(habitos: HabitosViewModel, abrirCadastro: () -> Unit, abrirDetalhe: (Int) -> Unit) {
+    val estado by habitos.uiState.collectAsStateWithLifecycle()
+    val ativos = estado.habitosAtivos
+    LazyColumn(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item { TituloSecao("Meus hábitos", "Acompanhe seus hábitos em andamento.") }
         item {
             Button(onClick = abrirCadastro, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Default.Add, contentDescription = null)

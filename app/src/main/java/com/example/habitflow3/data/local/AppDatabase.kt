@@ -1,4 +1,4 @@
-package com.example.habitflow3.data
+package com.example.habitflow3.data.local
 
 import android.content.Context
 import androidx.room.Database
@@ -11,8 +11,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun metaDao(): MetaDao
 
     companion object {
-        @Volatile
-        private var instancia: AppDatabase? = null
+        @Volatile private var instancia: AppDatabase? = null
 
         fun obter(context: Context): AppDatabase = instancia ?: synchronized(this) {
             instancia ?: Room.databaseBuilder(

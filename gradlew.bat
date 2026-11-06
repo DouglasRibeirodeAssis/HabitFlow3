@@ -10,5 +10,5 @@ if defined JAVA_HOME (
 ) else (
   set "JAVA_EXE=java.exe"
 )
-"%JAVA_EXE%" -classpath "%APP_HOME%gradle\wrapper\gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain %*
-exit /b %ERRORLEVEL%
+"%JAVA_EXE%" -Dorg.gradle.appname=gradlew -classpath "%APP_HOME%gradle\wrapper\gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain %*
+exit /b %errorlevel%
